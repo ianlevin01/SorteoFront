@@ -27,7 +27,7 @@ npm run preview    # sirve el build localmente
 2. En **Settings → Environment Variables**, agregar:
    | Nombre | Valor |
    |---|---|
-   | `VITE_API_URL` | `https://api.tu-dominio.com` (origen de la API, **sin** `/api`) |
+   | `VITE_API_URL` | `https://renattosorteo.online` (origen de la API, **sin** `/api`) |
 3. El `vercel.json` ya configura el build y el rewrite de SPA (para que las rutas
    tipo `/sorteos/xxx` funcionen al recargar).
 4. **Settings → Domains**: agregar el dominio del front.
