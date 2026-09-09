@@ -1,0 +1,105 @@
+.pad {
+  padding-block: var(--space-12);
+}
+
+.intro {
+  padding-block: var(--space-6) var(--space-6);
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+.back {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-muted);
+}
+.back:hover {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+.title {
+  margin-top: var(--space-2);
+  font-size: var(--text-2xl);
+}
+.subtitle {
+  margin-top: var(--space-1);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+.pendNote {
+  margin-top: var(--space-3);
+  display: inline-block;
+  font-size: var(--text-sm);
+  color: var(--color-warning);
+  background: var(--color-warning-soft);
+  padding: 0.5rem 0.85rem;
+  border-radius: var(--radius-pill);
+}
+
+.body {
+  padding-block: var(--space-6) var(--space-12);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+.filters {
+  display: flex;
+  gap: var(--space-2);
+}
+.legend {
+  display: flex;
+  gap: var(--space-4);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+.legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.dotOk,
+.dotPend {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 2px;
+}
+.dotOk {
+  background: var(--color-success);
+}
+.dotPend {
+  background: var(--color-warning);
+}
+.tapHint {
+  font-size: var(--text-xs);
+  color: var(--color-text-subtle);
+}
+.filter,
+.filterActive {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  padding: 0.45rem 0.9rem;
+  border-radius: var(--radius-pill);
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+}
+.filter:hover {
+  border-color: var(--brand-300);
+}
+.filterActive {
+  background: var(--color-primary);
+  color: #fff;
+  border-color: var(--color-primary);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(6.5rem, 1fr));
+  gap: var(--space-3);
+}

@@ -1,0 +1,103 @@
+.btn {
+  --btn-bg: var(--color-primary);
+  --btn-fg: var(--color-primary-contrast);
+  --btn-bg-hover: var(--color-primary-hover);
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  border-radius: var(--radius-pill);
+  font-weight: var(--weight-semibold);
+  line-height: 1;
+  white-space: nowrap;
+  text-decoration: none;
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+  transition: background var(--dur) var(--ease), transform var(--dur-fast) var(--ease),
+    box-shadow var(--dur) var(--ease), opacity var(--dur) var(--ease);
+}
+
+.btn:hover {
+  background: var(--btn-bg-hover);
+  text-decoration: none;
+}
+.btn:active {
+  transform: translateY(1px);
+}
+.btn:disabled,
+.btn[aria-disabled='true'] {
+  opacity: 0.55;
+  pointer-events: none;
+}
+.loading {
+  pointer-events: none;
+}
+
+/* ---- Variantes ---- */
+.primary {
+  --btn-bg: var(--color-primary);
+  --btn-fg: var(--color-primary-contrast);
+  --btn-bg-hover: var(--color-primary-hover);
+  box-shadow: var(--shadow-brand);
+}
+
+.secondary {
+  --btn-bg: var(--color-surface);
+  --btn-fg: var(--color-primary);
+  --btn-bg-hover: var(--brand-50);
+  border: 1px solid var(--color-border-strong);
+  box-shadow: var(--shadow-xs);
+}
+
+.ghost {
+  --btn-bg: transparent;
+  --btn-fg: var(--color-text);
+  --btn-bg-hover: var(--color-bg-2);
+}
+
+.subtle {
+  --btn-bg: var(--brand-50);
+  --btn-fg: var(--color-primary);
+  --btn-bg-hover: var(--brand-100);
+}
+
+.danger {
+  --btn-bg: var(--color-danger);
+  --btn-fg: #fff;
+  --btn-bg-hover: #a92f2b;
+}
+
+/* ---- Tamaños ---- */
+.sm {
+  padding: 0.5rem 0.9rem;
+  font-size: var(--text-sm);
+}
+.md {
+  padding: 0.7rem 1.25rem;
+  font-size: var(--text-base);
+}
+.lg {
+  padding: 0.95rem 1.75rem;
+  font-size: var(--text-lg);
+}
+.xl {
+  padding: 1.1rem 2rem;
+  font-size: var(--text-xl);
+  border-radius: var(--radius-lg);
+}
+
+.block {
+  width: 100%;
+}
+
+.label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  white-space: nowrap;
+}
+
+.loading .label {
+  opacity: 0.35;
+}

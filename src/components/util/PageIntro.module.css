@@ -1,0 +1,22 @@
+.intro {
+  padding-block: var(--space-8) var(--space-6);
+  border-bottom: 1px solid var(--color-border);
+}
+.intro[data-tone='brand'] {
+  background: linear-gradient(180deg, var(--brand-50), var(--color-bg));
+}
+.intro[data-tone='plain'] {
+  background: var(--color-surface);
+}
+
+.title {
+  font-size: var(--text-3xl);
+  letter-spacing: -0.02em;
+}
+
+.lead {
+  margin-top: var(--space-3);
+  color: var(--color-text-muted);
+  font-size: var(--text-lg);
+  max-width: 56ch;
+}

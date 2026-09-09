@@ -1,0 +1,26 @@
+.introFallback {
+  padding-block: var(--space-16);
+  background: linear-gradient(180deg, var(--brand-50), var(--color-bg) 70%);
+  text-align: center;
+}
+
+.introTitle {
+  font-size: var(--text-3xl);
+  letter-spacing: -0.02em;
+}
+
+.introText {
+  margin: var(--space-4) auto var(--space-6);
+  color: var(--color-text-muted);
+  font-size: var(--text-lg);
+  max-width: 46ch;
+}
+
+.winnersTeaser {
+  background: var(--color-surface);
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-lg);
+  padding: var(--space-8);
+  text-align: center;
+  color: var(--color-text-muted);
+}

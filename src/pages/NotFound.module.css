@@ -1,0 +1,22 @@
+.wrap {
+  padding-block: var(--space-16);
+  text-align: center;
+}
+
+.code {
+  font-size: var(--text-5xl);
+  font-weight: var(--weight-bold);
+  color: var(--brand-200);
+  line-height: 1;
+}
+
+.title {
+  margin-top: var(--space-4);
+  font-size: var(--text-2xl);
+}
+
+.text {
+  margin: var(--space-3) auto var(--space-6);
+  color: var(--color-text-muted);
+  max-width: 40ch;
+}
