@@ -35,7 +35,7 @@ export function Header() {
     <header className={styles.header}>
       <div className={styles.inner}>
         <Link to="/" className={styles.brand} aria-label="Importadora Precios Bajos — Inicio">
-          <BrandLogo className={styles.logo} />
+          <BrandLogo size={38} />
         </Link>
 
         <nav className={styles.navDesktop} aria-label="Principal">

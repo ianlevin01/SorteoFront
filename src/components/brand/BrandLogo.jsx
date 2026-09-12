@@ -1,20 +1,30 @@
-/*
- * Logo PLACEHOLDER. Reemplazar por el logo real de Importadora Precios Bajos
- * (idealmente un SVG). Mantener la prop `className` para el tamaño.
+import logo from '../../assets/logo.jpg';
+
+/**
+ * Logo real de Importadora Precios Bajos. Es una imagen cuadrada con el
+ * sello circular adentro; se recorta a círculo con CSS para que no se vea
+ * el fondo del cuadrado en ningún lado (header oscuro, tarjetas, etc).
  */
-export function BrandLogo({ className, showText = true }) {
+export function BrandLogo({ className, showText = true, size = 36 }) {
   return (
     <span
       className={className}
-      style={{ display: 'inline-flex', alignItems: 'center', gap: '0.55rem' }}
+      style={{ display: 'inline-flex', alignItems: 'center', gap: '0.6rem' }}
     >
-      <svg width="34" height="34" viewBox="0 0 40 40" aria-hidden="true">
-        <rect width="40" height="40" rx="11" fill="var(--color-primary)" />
-        <path
-          d="M11 27V13h3.4v14H11Zm6.1 0V13h5.7c2.9 0 4.7 1.7 4.7 4.3 0 2.6-1.8 4.3-4.7 4.3h-2.3V27h-3.4Zm3.4-8.1h1.9c1.1 0 1.8-.6 1.8-1.6s-.7-1.6-1.8-1.6h-1.9v3.2Z"
-          fill="#fff"
-        />
-      </svg>
+      <img
+        src={logo}
+        alt="Importadora Precios Bajos"
+        width={size}
+        height={size}
+        style={{
+          width: size,
+          height: size,
+          borderRadius: '50%',
+          objectFit: 'cover',
+          flexShrink: 0,
+          boxShadow: '0 0 0 1px rgba(15, 37, 71, 0.06)',
+        }}
+      />
       {showText && (
         <span
           style={{
