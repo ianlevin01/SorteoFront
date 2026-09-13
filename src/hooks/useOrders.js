@@ -5,11 +5,12 @@ import { useAuth } from '../context/AuthContext.jsx';
 export function useCreateOrder() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ raffleId, tierId }) =>
-      api('/orders', { method: 'POST', body: { raffleId, tierId } }),
-    onSuccess: () => {
+    mutationFn: ({ raffleId, tierId, numbers }) =>
+      api('/orders', { method: 'POST', body: { raffleId, tierId, numbers } }),
+    onSuccess: (_data, { raffleId }) => {
       qc.invalidateQueries({ queryKey: ['me'] });
       qc.invalidateQueries({ queryKey: ['raffles'] });
+      if (raffleId) qc.invalidateQueries({ queryKey: ['raffle-numbers', raffleId] });
     },
   });
 }
@@ -41,6 +42,14 @@ export function useMyOrder(orderId) {
     queryKey: ['me', 'order', orderId],
     queryFn: () => api(`/me/orders/${orderId}`),
     enabled: isAuthenticated && Boolean(orderId),
+    // Mientras un pedido "elegí tu número" espera el pago, lo repreguntamos
+    // solo para detectar apenas se vence el tiempo de reserva (el server lo
+    // resuelve de forma perezosa al consultarlo) y pasar a avisarle al
+    // usuario en cuanto pasa.
+    refetchInterval: (query) => {
+      const d = query.state.data;
+      return d && d.mode === 'pick' && d.status === 'pending_payment' ? 5000 : false;
+    },
   });
 }
 

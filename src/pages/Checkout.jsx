@@ -8,6 +8,7 @@ import {
   useRequestReview,
 } from '../hooks/useOrders.js';
 import { useRaffle } from '../hooks/useRaffles.js';
+import { useCountdown } from '../hooks/useCountdown.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import { Container } from '../components/ui/Container.jsx';
 import { LoadingBlock, Spinner } from '../components/ui/Spinner.jsx';
@@ -19,7 +20,21 @@ import { CopyField } from '../components/ui/CopyField.jsx';
 import { formatMoney, formatInt } from '../lib/format.js';
 import styles from './Checkout.module.css';
 
-const rangeArray = (n) => (n ? Array.from({ length: n.count }, (_, i) => n.start + i) : []);
+// El shape de `order.numbers` depende del modo del sorteo: correlativo
+// ({start, end, count}) o "elegí tu número" ({list, count}).
+const orderNumbers = (n) => {
+  if (!n) return [];
+  if (Array.isArray(n.list)) return n.list;
+  return Array.from({ length: n.count }, (_, i) => n.start + i);
+};
+
+const formatNumbersSummary = (n, max = 10) => {
+  const list = orderNumbers(n);
+  if (!list.length) return '';
+  if (!Array.isArray(n.list)) return `(${n.start}–${n.end})`;
+  if (list.length <= max) return `(${list.join(', ')})`;
+  return `(${list.slice(0, max).join(', ')}, +${list.length - max})`;
+};
 
 export default function Checkout() {
   const { orderId } = useParams();
@@ -33,7 +48,10 @@ export default function Checkout() {
   const [file, setFile] = useState(null);
 
   const o = upload.data && upload.data.orderId === orderId ? upload.data : order.data;
-  const numbers = useMemo(() => rangeArray(o?.numbers), [o]);
+  const numbers = useMemo(() => orderNumbers(o?.numbers), [o]);
+  const countdown = useCountdown(
+    o?.mode === 'pick' && o?.status === 'pending_payment' ? o.reservedUntil : null,
+  );
 
   if (!isAuthenticated) {
     return (
@@ -158,6 +176,30 @@ export default function Checkout() {
     );
   }
 
+  // ---- Vencida (solo "elegí tu número"): no se pagó a tiempo, número liberado ----
+  if (o.status === 'expired') {
+    return (
+      <Container narrow className={styles.doneWrap}>
+        <div className={styles.rejectHead}>
+          <span className={styles.warn}>!</span>
+          <h1 className={styles.doneTitle}>Se venció el tiempo para pagar</h1>
+          <p className={styles.doneText}>
+            Pasaron los 30 minutos para transferir y tu número volvió a estar disponible para
+            cualquiera. Podés elegir de nuevo cuando quieras.
+          </p>
+        </div>
+        <div className={styles.doneActions}>
+          <Button as={Link} to={`/sorteos/${o.raffleId}`} size="lg">
+            Elegir un número de nuevo
+          </Button>
+          <Link to="/sorteos" className={styles.secondary}>
+            Ver otros sorteos
+          </Link>
+        </div>
+      </Container>
+    );
+  }
+
   // ---- Pago (estado inicial) ----
   const p = payment.data || {};
   return (
@@ -220,9 +262,26 @@ export default function Checkout() {
       </ol>
 
       <p className={styles.reserved}>
-        Tus {formatInt(o.chances)} números ({o.numbers.start}–{o.numbers.end}) ya están{' '}
-        <strong>reservados</strong>. Se activan cuando confirmemos el pago.
+        {o.mode === 'pick' ? (
+          <>
+            Tu selección {formatNumbersSummary(o.numbers)} ya está <strong>reservada</strong>.
+          </>
+        ) : (
+          <>
+            Tus {formatInt(o.chances)} números ({o.numbers.start}–{o.numbers.end}) ya están{' '}
+            <strong>reservados</strong>. Se activan cuando confirmemos el pago.
+          </>
+        )}
       </p>
+      {o.mode === 'pick' && countdown && !countdown.finished && (
+        <p className={styles.reserved}>
+          Tenés{' '}
+          <strong>
+            {String(countdown.minutes).padStart(2, '0')}:{String(countdown.seconds).padStart(2, '0')}
+          </strong>{' '}
+          para transferir y subir el comprobante antes de perder{o.chances > 1 ? 'los' : 'lo'}.
+        </p>
+      )}
     </Container>
   );
 }

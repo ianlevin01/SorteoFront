@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { useRaffle, raffleState } from '../hooks/useRaffles.js';
 import { useCreateOrder } from '../hooks/useOrders.js';
 import { useAuth } from '../context/AuthContext.jsx';
@@ -11,6 +12,7 @@ import { Countdown } from '../components/ui/Countdown.jsx';
 import { RaffleStateBadge } from '../components/ui/Badge.jsx';
 import { ProgressBar } from '../components/ui/ProgressBar.jsx';
 import { ChanceSelector } from '../components/raffles/ChanceSelector.jsx';
+import { NumberPicker } from '../components/raffles/NumberPicker.jsx';
 import { HowItWorks } from '../components/marketing/HowItWorks.jsx';
 import { formatDate, formatInt } from '../lib/format.js';
 import { raffleProgress } from '../hooks/useRaffles.js';
@@ -20,6 +22,7 @@ export default function RaffleDetail() {
   const { raffleId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
+  const qc = useQueryClient();
   const { isAuthenticated } = useAuth();
   const { data: raffle, isLoading, isError, error } = useRaffle(raffleId);
   const createOrder = useCreateOrder();
@@ -48,10 +51,11 @@ export default function RaffleDetail() {
   }
 
   const state = raffleState(raffle);
+  const isPick = raffle.mode === 'pick';
   const gallery = raffle.images?.length ? raffle.images : [raffle.coverImage].filter(Boolean);
   const progress = raffleProgress(raffle);
   const available =
-    raffle.totalNumbers != null
+    !isPick && raffle.totalNumbers != null
       ? Math.max(0, raffle.totalNumbers - (raffle.numbersAssigned || 0))
       : null;
 
@@ -65,6 +69,17 @@ export default function RaffleDetail() {
       navigate(`/comprar/${order.orderId}`);
     } catch {
       /* el error se muestra abajo */
+    }
+  };
+
+  const onConfirmNumbers = async (numbers) => {
+    try {
+      const { order } = await createOrder.mutateAsync({ raffleId, numbers });
+      navigate(`/comprar/${order.orderId}`);
+    } catch {
+      // Probablemente alguno de los números elegidos venció justo ahora: la
+      // grilla se resincroniza sola para mostrar qué sigue siendo tuyo.
+      qc.invalidateQueries({ queryKey: ['raffle-numbers', raffleId] });
     }
   };
 
@@ -124,6 +139,14 @@ export default function RaffleDetail() {
                 {progress > 0 && <ProgressBar value={progress} />}
               </div>
             )}
+            {isPick && raffle.totalNumbers != null && (
+              <div className={styles.availBox}>
+                <span>
+                  Elegís cualquier número entre <strong>0</strong> y{' '}
+                  <strong>{formatInt(raffle.totalNumbers - 1)}</strong>
+                </span>
+              </div>
+            )}
           </div>
         </Container>
       </div>
@@ -132,11 +155,21 @@ export default function RaffleDetail() {
         <div className={styles.buyCol}>
           {state === 'active' ? (
             <div className={styles.buyCard}>
-              <ChanceSelector
-                tiers={raffle.chanceTiers}
-                onConfirm={onConfirm}
-                busy={createOrder.isPending}
-              />
+              {isPick ? (
+                <NumberPicker
+                  raffleId={raffleId}
+                  totalNumbers={raffle.totalNumbers}
+                  pricePerNumber={raffle.pricePerNumber}
+                  onConfirm={onConfirmNumbers}
+                  busy={createOrder.isPending}
+                />
+              ) : (
+                <ChanceSelector
+                  tiers={raffle.chanceTiers}
+                  onConfirm={onConfirm}
+                  busy={createOrder.isPending}
+                />
+              )}
               {createOrder.isError && (
                 <p className={styles.buyError}>{createOrder.error?.message}</p>
               )}
