@@ -3,8 +3,15 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { QRCodeSVG } from 'qrcode.react';
 import { TicketStatusBadge } from '../ui/Badge.jsx';
+import { Button } from '../ui/Button.jsx';
 import { padTicket, formatDate } from '../../lib/format.js';
 import styles from './TicketDetail.module.css';
+
+const PAY_CTA = {
+  pending: 'Subir comprobante',
+  in_review: 'Ver estado del pago',
+  rejected: 'Ver qué pasó y reintentar',
+};
 
 export function TicketDetail({ ticket, raffle, onClose }) {
   useEffect(() => {
@@ -76,6 +83,12 @@ export function TicketDetail({ ticket, raffle, onClose }) {
               <Link to={`/verificar/${ticket.verificationCode}`}>verificar ticket</Link>.
             </p>
           </div>
+
+          {ticket.orderId && PAY_CTA[ticket.status] && (
+            <Button as={Link} to={`/comprar/${ticket.orderId}`} size="lg" block className={styles.payCta}>
+              {PAY_CTA[ticket.status]}
+            </Button>
+          )}
         </div>
       </motion.div>
     </motion.div>

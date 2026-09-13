@@ -57,6 +57,16 @@ export default function MyRaffleTickets() {
     (acc, t) => ({ ...acc, [t.status]: (acc[t.status] || 0) + 1 }),
     {},
   );
+  // Pedidos que todavía necesitan algo del comprador (pagar, o reintentar
+  // tras un rechazo) — de ahí se arma el acceso directo a /comprar/:orderId,
+  // que si no quedaba en ningún lado una vez que salías de esa pantalla.
+  const actionableOrders = [
+    ...new Map(
+      tickets
+        .filter((t) => t.orderId && t.status !== 'confirmed' && t.status !== 'void')
+        .map((t) => [t.orderId, t.status]),
+    ).entries(),
+  ];
   const visible =
     filter === 'all'
       ? tickets
@@ -74,11 +84,23 @@ export default function MyRaffleTickets() {
             {formatInt(tickets.length)} números
             {raffle?.drawDate && ` · se sortea el ${formatDate(raffle.drawDate)}`}
           </p>
-          {(counts.pending || counts.in_review) && (
-            <p className={styles.pendNote}>
-              Tenés {formatInt((counts.pending || 0) + (counts.in_review || 0))} números
-              esperando la confirmación del pago.
-            </p>
+          {actionableOrders.length > 0 && (
+            <div className={styles.pendNote}>
+              <span>
+                {counts.rejected
+                  ? 'Tenés un pedido que necesita tu atención.'
+                  : `Tenés ${formatInt(
+                      (counts.pending || 0) + (counts.in_review || 0),
+                    )} números esperando la confirmación del pago.`}
+              </span>
+              <div className={styles.pendActions}>
+                {actionableOrders.map(([orderId, status]) => (
+                  <Button key={orderId} as={Link} to={`/comprar/${orderId}`} variant="secondary" size="sm">
+                    {status === 'rejected' ? 'Revisar pedido' : 'Subir comprobante'}
+                  </Button>
+                ))}
+              </div>
+            </div>
           )}
         </Container>
       </div>
