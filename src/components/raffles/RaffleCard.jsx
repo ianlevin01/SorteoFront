@@ -9,7 +9,10 @@ import styles from './RaffleCard.module.css';
 export function RaffleCard({ raffle }) {
   const state = raffleState(raffle);
   const progress = raffleProgress(raffle);
-  const cheapest = [...(raffle.chanceTiers || [])].sort((a, b) => a.price - b.price)[0];
+  const isPick = raffle.mode === 'pick';
+  const cheapest = isPick
+    ? null
+    : [...(raffle.chanceTiers || [])].sort((a, b) => a.price - b.price)[0];
   const to = `/sorteos/${raffle.raffleId}`;
 
   return (
@@ -44,7 +47,13 @@ export function RaffleCard({ raffle }) {
 
       <div className={styles.footer}>
         <div className={styles.price}>
-          {cheapest ? (
+          {isPick && raffle.pricePerNumber ? (
+            <>
+              <span className={styles.priceLabel}>Desde</span>
+              <span className={styles.priceValue}>{formatMoney(raffle.pricePerNumber)}</span>
+              <span className={styles.priceHint}>· por número</span>
+            </>
+          ) : cheapest ? (
             <>
               <span className={styles.priceLabel}>Desde</span>
               <span className={styles.priceValue}>{formatMoney(cheapest.price)}</span>

@@ -10,10 +10,13 @@ import styles from './RaffleHero.module.css';
 
 export function RaffleHero({ raffle }) {
   const state = raffleState(raffle);
-  const cheapest = [...(raffle.chanceTiers || [])].sort((a, b) => a.price - b.price)[0];
+  const isPick = raffle.mode === 'pick';
+  const cheapest = isPick
+    ? null
+    : [...(raffle.chanceTiers || [])].sort((a, b) => a.price - b.price)[0];
   const to = `/sorteos/${raffle.raffleId}`;
   const available =
-    raffle.totalNumbers != null
+    !isPick && raffle.totalNumbers != null
       ? Math.max(0, raffle.totalNumbers - (raffle.numbersAssigned || 0))
       : null;
 
@@ -54,14 +57,30 @@ export function RaffleHero({ raffle }) {
                 <dd className={styles.factStrong}>{formatInt(available)}</dd>
               </div>
             )}
-            {cheapest && (
+            {isPick && raffle.totalNumbers != null && (
+              <div className={styles.fact}>
+                <dt>Elegís tu número</dt>
+                <dd className={styles.factStrong}>0 – {formatInt(raffle.totalNumbers - 1)}</dd>
+              </div>
+            )}
+            {isPick && raffle.pricePerNumber ? (
               <div className={styles.fact}>
                 <dt>Desde</dt>
                 <dd className={styles.factStrong}>
-                  {formatMoney(cheapest.price)}
-                  <span className={styles.factHint}> · {chancesLabel(cheapest.chances)}</span>
+                  {formatMoney(raffle.pricePerNumber)}
+                  <span className={styles.factHint}> · por número</span>
                 </dd>
               </div>
+            ) : (
+              cheapest && (
+                <div className={styles.fact}>
+                  <dt>Desde</dt>
+                  <dd className={styles.factStrong}>
+                    {formatMoney(cheapest.price)}
+                    <span className={styles.factHint}> · {chancesLabel(cheapest.chances)}</span>
+                  </dd>
+                </div>
+              )
             )}
           </dl>
 
