@@ -161,11 +161,17 @@ export default function Checkout() {
                 <span>¿Estás seguro de que la transferencia está bien?</span>
                 <Button
                   variant="secondary"
-                  onClick={() => review.mutate({ orderId })}
+                  onClick={() => !review.isPending && !review.isSuccess && review.mutate({ orderId })}
                   loading={review.isPending}
+                  disabled={review.isPending || review.isSuccess}
                 >
                   Pedir revisión
                 </Button>
+                {review.isError && !review.isSuccess && (
+                  <p className={styles.error}>
+                    Ya se había registrado tu pedido de revisión — no hace falta tocar de nuevo.
+                  </p>
+                )}
               </>
             ) : (
               <span>Ya pediste una revisión. Te vamos a responder pronto.</span>

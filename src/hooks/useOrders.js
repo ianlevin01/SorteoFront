@@ -32,7 +32,7 @@ export function useRequestReview() {
   return useMutation({
     mutationFn: ({ orderId, note }) =>
       api(`/orders/${orderId}/request-review`, { method: 'POST', body: { note } }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['me'] }),
+    onSettled: () => qc.invalidateQueries({ queryKey: ['me'] }),
   });
 }
 
