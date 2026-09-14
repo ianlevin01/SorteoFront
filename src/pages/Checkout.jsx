@@ -184,7 +184,7 @@ export default function Checkout() {
           <span className={styles.warn}>!</span>
           <h1 className={styles.doneTitle}>Se venció el tiempo para pagar</h1>
           <p className={styles.doneText}>
-            Pasaron los 30 minutos para transferir y tu número volvió a estar disponible para
+            Pasaron los 10 minutos para transferir y tu número volvió a estar disponible para
             cualquiera. Podés elegir de nuevo cuando quieras.
           </p>
         </div>

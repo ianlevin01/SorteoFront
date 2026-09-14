@@ -294,7 +294,7 @@ export function NumberPicker({ raffleId, totalNumbers, pricePerNumber, onConfirm
             <span className={styles.total}>{formatMoney(total)}</span>
           </div>
           <div className={styles.summaryMeta}>
-            <span>Reservado durante 30:00</span>
+            <span>Reservado durante 10:00</span>
             {countdown && !countdown.finished && (
               <span className={styles.timer}>
                 Tu reserva vence en {String(countdown.minutes).padStart(2, '0')}:
