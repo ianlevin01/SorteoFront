@@ -105,7 +105,7 @@ export default function RaffleDetail() {
               <PrizeImage
                 src={gallery[activeImage]}
                 alt={raffle.prizeTitle || raffle.title}
-                ratio="4/3"
+                ratio="auto"
                 className={styles.cover}
               />
               {gallery[activeImage] && <span className={styles.zoomHint}>⤢ Ampliar</span>}

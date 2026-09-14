@@ -9,11 +9,15 @@ import styles from './PrizeImage.module.css';
 export function PrizeImage({ src, alt = '', ratio = '4/3', className }) {
   const [failed, setFailed] = useState(false);
   const show = src && !failed;
+  // 'auto' + imagen real -> se muestra a su relación de aspecto original (sin
+  // recortar ni deformar). Sin imagen todavía no hay nada que medir, así que
+  // el placeholder cae a un recuadro 4/3 en vez de colapsar a alto 0.
+  const natural = ratio === 'auto' && show;
 
   return (
     <div
       className={clsx(styles.wrap, className)}
-      style={{ aspectRatio: ratio === 'auto' ? undefined : ratio }}
+      style={{ aspectRatio: natural ? undefined : ratio === 'auto' ? '4 / 3' : ratio }}
       data-empty={!show || undefined}
     >
       {show ? (
@@ -21,7 +25,7 @@ export function PrizeImage({ src, alt = '', ratio = '4/3', className }) {
           src={src}
           alt={alt}
           loading="lazy"
-          className={styles.img}
+          className={clsx(styles.img, natural && styles.imgNatural)}
           onError={() => setFailed(true)}
         />
       ) : (
