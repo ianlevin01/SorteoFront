@@ -25,6 +25,8 @@
   position: absolute;
   top: var(--space-3);
   left: var(--space-3);
+  display: inline-flex;
+  line-height: 0;
   background: color-mix(in srgb, var(--color-surface) 92%, transparent);
   border-radius: var(--radius-pill);
   padding: 2px;

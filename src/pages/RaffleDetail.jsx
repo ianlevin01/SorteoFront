@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useRaffle, raffleState } from '../hooks/useRaffles.js';
 import { useCreateOrder } from '../hooks/useOrders.js';
 import { useAuth } from '../context/AuthContext.jsx';
@@ -8,15 +9,20 @@ import { Container } from '../components/ui/Container.jsx';
 import { LoadingBlock } from '../components/ui/Spinner.jsx';
 import { EmptyState } from '../components/ui/EmptyState.jsx';
 import { PrizeImage } from '../components/ui/PrizeImage.jsx';
-import { Countdown } from '../components/ui/Countdown.jsx';
-import { RaffleStateBadge } from '../components/ui/Badge.jsx';
 import { ProgressBar } from '../components/ui/ProgressBar.jsx';
 import { ChanceSelector } from '../components/raffles/ChanceSelector.jsx';
 import { NumberPicker } from '../components/raffles/NumberPicker.jsx';
 import { HowItWorks } from '../components/marketing/HowItWorks.jsx';
-import { formatDate, formatInt } from '../lib/format.js';
+import { formatDate, formatInt, daysUntilLabel } from '../lib/format.js';
 import { raffleProgress } from '../hooks/useRaffles.js';
 import styles from './RaffleDetail.module.css';
+
+const KICKER_LABEL = {
+  active: 'Sorteo activo',
+  paused: 'Sorteo en pausa',
+  finished: 'Sorteo finalizado',
+  soldout: 'Números agotados',
+};
 
 export default function RaffleDetail() {
   const { raffleId } = useParams();
@@ -28,6 +34,7 @@ export default function RaffleDetail() {
   const createOrder = useCreateOrder();
 
   const [activeImage, setActiveImage] = useState(0);
+  const [lightbox, setLightbox] = useState(false);
 
   if (isLoading) {
     return (
@@ -58,6 +65,7 @@ export default function RaffleDetail() {
     !isPick && raffle.totalNumbers != null
       ? Math.max(0, raffle.totalNumbers - (raffle.numbersAssigned || 0))
       : null;
+  const hasDescription = Boolean(raffle.prizeDescription || raffle.description);
 
   const onConfirm = async (tier) => {
     if (!isAuthenticated) {
@@ -85,15 +93,23 @@ export default function RaffleDetail() {
 
   return (
     <>
-      <div className={styles.top}>
-        <Container className={styles.topGrid}>
-          <div className={styles.gallery}>
-            <PrizeImage
-              src={gallery[activeImage]}
-              alt={raffle.prizeTitle || raffle.title}
-              ratio="4/3"
-              className={styles.cover}
-            />
+      <Container className={styles.page}>
+        <div className={styles.grid}>
+          <div className={styles.media}>
+            <button
+              type="button"
+              className={styles.mainImageBtn}
+              onClick={() => gallery[activeImage] && setLightbox(true)}
+              aria-label="Ampliar imagen"
+            >
+              <PrizeImage
+                src={gallery[activeImage]}
+                alt={raffle.prizeTitle || raffle.title}
+                ratio="4/3"
+                className={styles.cover}
+              />
+              {gallery[activeImage] && <span className={styles.zoomHint}>⤢ Ampliar</span>}
+            </button>
             {gallery.length > 1 && (
               <div className={styles.thumbs}>
                 {gallery.map((img, i) => (
@@ -111,22 +127,19 @@ export default function RaffleDetail() {
             )}
           </div>
 
-          <div className={styles.info}>
-            <div className={styles.badges}>
-              <RaffleStateBadge state={state} />
-              {raffle.drawDate && (
-                <span className={styles.dateInline}>Se sortea el {formatDate(raffle.drawDate)}</span>
-              )}
-            </div>
+          <aside className={styles.buy}>
+            <span className={styles.kicker}>{KICKER_LABEL[state] || 'Sorteo'}</span>
             <h1 className={styles.title}>{raffle.title}</h1>
             {(raffle.prizeDescription || raffle.description) && (
               <p className={styles.lead}>{raffle.prizeDescription || raffle.description}</p>
             )}
 
-            <div className={styles.countdownBox}>
-              <span className={styles.countdownLabel}>Tiempo restante</span>
-              <Countdown target={raffle.drawDate} />
-            </div>
+            {raffle.drawDate && (
+              <div className={styles.dateBox}>
+                <span className={styles.dateBig}>{formatDate(raffle.drawDate)}</span>
+                <span className={styles.dateRelative}>{daysUntilLabel(raffle.drawDate)}</span>
+              </div>
+            )}
 
             {available != null && (
               <div className={styles.availBox}>
@@ -139,74 +152,105 @@ export default function RaffleDetail() {
                 {progress > 0 && <ProgressBar value={progress} />}
               </div>
             )}
-            {isPick && raffle.totalNumbers != null && (
-              <div className={styles.availBox}>
-                <span>
-                  Elegís cualquier número entre <strong>0</strong> y{' '}
-                  <strong>{formatInt(raffle.totalNumbers - 1)}</strong>
-                </span>
-              </div>
-            )}
-          </div>
-        </Container>
-      </div>
 
-      <Container className={styles.body}>
-        <div className={styles.buyCol}>
-          {state === 'active' ? (
             <div className={styles.buyCard}>
-              {isPick ? (
-                <NumberPicker
-                  raffleId={raffleId}
-                  totalNumbers={raffle.totalNumbers}
-                  pricePerNumber={raffle.pricePerNumber}
-                  onConfirm={onConfirmNumbers}
-                  busy={createOrder.isPending}
-                />
+              {state === 'active' ? (
+                <>
+                  {isPick ? (
+                    <NumberPicker
+                      raffleId={raffleId}
+                      totalNumbers={raffle.totalNumbers}
+                      pricePerNumber={raffle.pricePerNumber}
+                      onConfirm={onConfirmNumbers}
+                      busy={createOrder.isPending}
+                    />
+                  ) : (
+                    <ChanceSelector
+                      tiers={raffle.chanceTiers}
+                      onConfirm={onConfirm}
+                      busy={createOrder.isPending}
+                    />
+                  )}
+                  {createOrder.isError && (
+                    <p className={styles.buyError}>{createOrder.error?.message}</p>
+                  )}
+                </>
               ) : (
-                <ChanceSelector
-                  tiers={raffle.chanceTiers}
-                  onConfirm={onConfirm}
-                  busy={createOrder.isPending}
-                />
-              )}
-              {createOrder.isError && (
-                <p className={styles.buyError}>{createOrder.error?.message}</p>
+                <EmptyState
+                  icon={<GiftIcon />}
+                  title={
+                    state === 'finished'
+                      ? 'Este sorteo ya finalizó'
+                      : state === 'soldout'
+                        ? 'No quedan números'
+                        : 'Este sorteo no está recibiendo compras'
+                  }
+                >
+                  {state === 'finished' && raffle.winner
+                    ? `Número ganador: ${raffle.winner.number}`
+                    : 'Mirá los demás sorteos activos.'}
+                </EmptyState>
               )}
             </div>
-          ) : (
-            <div className={styles.buyCard}>
-              <EmptyState
-                icon={<GiftIcon />}
-                title={
-                  state === 'finished'
-                    ? 'Este sorteo ya finalizó'
-                    : state === 'soldout'
-                      ? 'No quedan números'
-                      : 'Este sorteo no está recibiendo compras'
-                }
-              >
-                {state === 'finished' && raffle.winner
-                  ? `Número ganador: ${raffle.winner.number}`
-                  : 'Mirá los demás sorteos activos.'}
-              </EmptyState>
-            </div>
+          </aside>
+
+          {hasDescription && (
+            <section className={styles.about}>
+              <h2 className={styles.h2}>Qué se sortea</h2>
+              <p className={styles.prose}>{raffle.prizeDescription || raffle.description}</p>
+            </section>
           )}
-        </div>
 
-        <div className={styles.aboutCol}>
-          <section className={styles.section}>
-            <h2 className={styles.h2}>Qué se sortea</h2>
-            <p className={styles.prose}>{raffle.prizeDescription || raffle.description || '—'}</p>
-          </section>
-
-          <section className={styles.section}>
+          <section className={styles.participate}>
             <h2 className={styles.h2}>Cómo participar</h2>
             <HowItWorks />
           </section>
         </div>
       </Container>
+
+      <AnimatePresence>
+        {lightbox && (
+          <Lightbox src={gallery[activeImage]} alt={raffle.title} onClose={() => setLightbox(false)} />
+        )}
+      </AnimatePresence>
     </>
+  );
+}
+
+function Lightbox({ src, alt, onClose }) {
+  useEffect(() => {
+    const onKey = (e) => e.key === 'Escape' && onClose();
+    window.addEventListener('keydown', onKey);
+    document.body.style.overflow = 'hidden';
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      document.body.style.overflow = '';
+    };
+  }, [onClose]);
+
+  return (
+    <motion.div
+      className={styles.lightbox}
+      onClick={onClose}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.15 }}
+    >
+      <button type="button" className={styles.lightboxClose} onClick={onClose} aria-label="Cerrar">
+        ✕
+      </button>
+      <motion.img
+        src={src}
+        alt={alt}
+        className={styles.lightboxImg}
+        initial={{ scale: 0.94, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.96, opacity: 0 }}
+        transition={{ duration: 0.18 }}
+        onClick={(e) => e.stopPropagation()}
+      />
+    </motion.div>
   );
 }
 

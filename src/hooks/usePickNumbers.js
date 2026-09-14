@@ -39,6 +39,16 @@ export function useReserveNumber(raffleId) {
   });
 }
 
+export function useReserveRandomNumbers(raffleId) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (count) => api(`/raffles/${raffleId}/numbers/random`, { method: 'POST', body: { count } }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['raffle-numbers', raffleId] });
+    },
+  });
+}
+
 export function useReleaseNumber(raffleId) {
   const qc = useQueryClient();
   return useMutation({

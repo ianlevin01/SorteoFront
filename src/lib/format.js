@@ -31,3 +31,13 @@ export const isFinishedDate = (iso) => (iso ? isPast(new Date(iso)) : false);
 
 export const timeUntil = (iso) =>
   iso ? formatDistanceToNowStrict(new Date(iso), { locale: es, addSuffix: true }) : '';
+
+/** "Faltan 23 días" / "Falta 1 día" / "Es hoy" / "Ya se sorteó". */
+export const daysUntilLabel = (iso) => {
+  if (!iso) return '';
+  const target = new Date(iso);
+  if (isPast(target)) return 'Ya se sorteó';
+  const distance = formatDistanceToNowStrict(target, { locale: es, unit: 'day' });
+  if (distance.startsWith('0 ')) return 'Es hoy';
+  return distance.startsWith('1 ') ? `Falta ${distance}` : `Faltan ${distance}`;
+};
