@@ -151,7 +151,7 @@ export default function Checkout() {
           <UploadForm
             file={file}
             setFile={setFile}
-            onSubmit={() => upload.mutate({ orderId, file })}
+            onSubmit={() => upload.mutate({ orderId, file }, { onSuccess: () => setFile(null) })}
             error={upload.error?.message}
             label="Subir otro comprobante"
           />
@@ -260,7 +260,7 @@ export default function Checkout() {
           <UploadForm
             file={file}
             setFile={setFile}
-            onSubmit={() => upload.mutate({ orderId, file })}
+            onSubmit={() => upload.mutate({ orderId, file }, { onSuccess: () => setFile(null) })}
             error={upload.error?.message}
             label="Ya transferí, enviar comprobante"
           />
