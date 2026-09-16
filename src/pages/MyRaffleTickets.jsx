@@ -137,7 +137,7 @@ export default function MyRaffleTickets() {
             <div className={styles.grid}>
               {visible.map((t) => (
                 <TicketMini
-                  key={t.number}
+                  key={`${t.orderId}-${t.number}`}
                   number={t.number}
                   status={t.status}
                   totalNumbers={raffle?.totalNumbers}

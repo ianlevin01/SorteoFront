@@ -24,7 +24,8 @@ export function TicketDetail({ ticket, raffle, onClose }) {
     };
   }, [onClose]);
 
-  const verifyUrl = `${window.location.origin}/verificar/${ticket.verificationCode}`;
+  const hasCode = Boolean(ticket.verificationCode);
+  const verifyUrl = hasCode ? `${window.location.origin}/verificar/${ticket.verificationCode}` : null;
 
   return (
     <motion.div
@@ -68,21 +69,27 @@ export function TicketDetail({ ticket, raffle, onClose }) {
                 <dd>{formatDate(raffle.drawDate)}</dd>
               </div>
             )}
-            <div>
-              <dt>Código</dt>
-              <dd className={styles.code}>{ticket.verificationCode}</dd>
-            </div>
+            {hasCode && (
+              <div>
+                <dt>Código</dt>
+                <dd className={styles.code}>{ticket.verificationCode}</dd>
+              </div>
+            )}
           </dl>
 
-          <div className={styles.qrRow}>
-            <div className={styles.qr}>
-              <QRCodeSVG value={verifyUrl} size={96} bgColor="transparent" fgColor="#16233b" />
+          {hasCode ? (
+            <div className={styles.qrRow}>
+              <div className={styles.qr}>
+                <QRCodeSVG value={verifyUrl} size={96} bgColor="transparent" fgColor="#16233b" />
+              </div>
+              <p className={styles.qrText}>
+                Escaneá para verificar esta participación, o entrá a{' '}
+                <Link to={`/verificar/${ticket.verificationCode}`}>verificar ticket</Link>.
+              </p>
             </div>
-            <p className={styles.qrText}>
-              Escaneá para verificar esta participación, o entrá a{' '}
-              <Link to={`/verificar/${ticket.verificationCode}`}>verificar ticket</Link>.
-            </p>
-          </div>
+          ) : (
+            <p className={styles.qrText}>Este número ya no tiene un código de verificación vigente.</p>
+          )}
 
           {ticket.orderId && PAY_CTA[ticket.status] && (
             <Button as={Link} to={`/comprar/${ticket.orderId}`} size="lg" block className={styles.payCta}>
