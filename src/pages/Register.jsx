@@ -19,12 +19,15 @@ const EMPTY = {
   postalCode: '',
 };
 
-function ageFrom(ddmmyyyy) {
-  const m = ddmmyyyy.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+const TODAY_ISO = new Date().toISOString().slice(0, 10);
+
+// El input nativo type="date" siempre entrega (y espera) 'YYYY-MM-DD'.
+function ageFrom(isoDate) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(isoDate || '');
   if (!m) return null;
-  const [, d, mo, y] = m.map(Number);
+  const [, y, mo, d] = m.map(Number);
   const birth = new Date(Date.UTC(y, mo - 1, d));
-  if (birth.getUTCDate() !== d || birth.getUTCMonth() !== mo - 1) return null;
+  if (birth.getUTCFullYear() !== y || birth.getUTCMonth() !== mo - 1 || birth.getUTCDate() !== d) return null;
   const now = new Date();
   let age = now.getUTCFullYear() - y;
   if (now.getUTCMonth() + 1 < mo || (now.getUTCMonth() + 1 === mo && now.getUTCDate() < d)) age -= 1;
@@ -36,7 +39,7 @@ function validate(form) {
   if (form.firstName.trim().length < 2) e.firstName = 'Ingresá tu nombre';
   if (form.lastName.trim().length < 2) e.lastName = 'Ingresá tu apellido';
   const age = ageFrom(form.birthDate);
-  if (age === null) e.birthDate = 'Fecha inválida. Usá DD/MM/AAAA';
+  if (age === null) e.birthDate = form.birthDate ? 'Fecha inválida' : 'Ingresá tu fecha de nacimiento';
   else if (age < 18) e.birthDate = 'Debés ser mayor de 18 años para participar';
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) e.email = 'Email inválido';
   if (!/^\d{8,15}$/.test(onlyDigits(form.whatsapp))) e.whatsapp = 'Número inválido (con código de país)';
@@ -89,7 +92,6 @@ export default function Register() {
     setErrors(eObj);
     if (Object.keys(eObj).length) return;
 
-    const [d, mo, y] = form.birthDate.split('/');
     setBusy(true);
     setSubmitError('');
     try {
@@ -97,7 +99,7 @@ export default function Register() {
         dni: onlyDigits(dni),
         firstName: form.firstName.trim(),
         lastName: form.lastName.trim(),
-        birthDate: `${y}-${mo}-${d}`,
+        birthDate: form.birthDate,
         email: form.email.trim(),
         whatsapp: onlyDigits(form.whatsapp),
         address: form.address.trim(),
@@ -189,10 +191,11 @@ export default function Register() {
             {(p) => (
               <TextInput
                 {...p}
+                type="date"
                 value={form.birthDate}
                 onChange={set('birthDate')}
-                inputMode="numeric"
-                placeholder="DD/MM/AAAA"
+                max={TODAY_ISO}
+                min="1900-01-01"
               />
             )}
           </Field>
