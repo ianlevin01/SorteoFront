@@ -68,6 +68,29 @@ export function NumberPicker({ raffleId, totalNumbers, pricePerNumber, onConfirm
   }, [countdown?.finished]);
 
   const unavailable = new Set(avail.data?.unavailable || []);
+
+  // Si una página quedó completamente agotada (todo tomado y nada mío para
+  // mostrar), no tiene sentido mostrarla llena de números tachados: salta
+  // sola a la próxima página con algo disponible, en la dirección en la que
+  // se estaba navegando. Se desarma con una búsqueda puntual (si alguien
+  // busca un número específico, lo mostramos aunque el resto de la página
+  // ya esté vendida).
+  const skipDirRef = useRef(1);
+  const skipArmedRef = useRef(true);
+  useEffect(() => {
+    if (!skipArmedRef.current || avail.isLoading || !avail.data) return;
+    const rangeSize = to - from + 1;
+    let unavailableNotMine = 0;
+    for (const n of avail.data.unavailable || []) {
+      if (!selectedNumbers.has(n)) unavailableNotMine += 1;
+    }
+    if (unavailableNotMine < rangeSize) return; // hay algo libre o mío acá: no salteamos
+    const next = page + skipDirRef.current;
+    if (next < 0 || next > pageCount - 1) return; // no hay más páginas de ese lado
+    setPage(next);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [avail.data, avail.isLoading, from, to, page, pageCount]);
+
   const requireAuthOr = (fn) => {
     if (!isAuthenticated) {
       navigate(`/ingresar?next=${encodeURIComponent(location.pathname)}`);
@@ -100,6 +123,7 @@ export function NumberPicker({ raffleId, totalNumbers, pricePerNumber, onConfirm
   const goToNumber = (raw) => {
     const n = Number(raw);
     if (!Number.isInteger(n) || n < 0 || n >= totalNumbers) return false;
+    skipArmedRef.current = false; // búsqueda puntual: mostrá esa página tal cual, aunque esté agotada
     setPage(Math.floor(n / PAGE_SIZE));
     return true;
   };
@@ -189,7 +213,11 @@ export function NumberPicker({ raffleId, totalNumbers, pricePerNumber, onConfirm
           <button
             type="button"
             className={styles.navBtn}
-            onClick={() => setPage((p) => Math.max(0, p - 1))}
+            onClick={() => {
+              skipDirRef.current = -1;
+              skipArmedRef.current = true;
+              setPage((p) => Math.max(0, p - 1));
+            }}
             disabled={page === 0}
             aria-label="Página anterior"
           >
@@ -201,7 +229,11 @@ export function NumberPicker({ raffleId, totalNumbers, pricePerNumber, onConfirm
           <button
             type="button"
             className={styles.navBtn}
-            onClick={() => setPage((p) => Math.min(pageCount - 1, p + 1))}
+            onClick={() => {
+              skipDirRef.current = 1;
+              skipArmedRef.current = true;
+              setPage((p) => Math.min(pageCount - 1, p + 1));
+            }}
             disabled={page >= pageCount - 1}
             aria-label="Página siguiente"
           >
