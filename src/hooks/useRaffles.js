@@ -19,6 +19,10 @@ export function useRaffle(raffleId) {
 /** Deriva el estado de presentación de un sorteo. */
 export function raffleState(raffle) {
   if (!raffle) return 'finished';
+  // Si ya se cargó el número ganador, tratalo como terminado en toda la UI
+  // (tarjetas del listado, kicker, selector de compra) sin importar qué
+  // `status` tenga puesto todavía el sorteo.
+  if (raffle.winner) return 'finished';
   if (raffle.status === 'finished') return 'finished';
   if (raffle.status === 'paused') return 'paused';
   // `closesAt` siempre viaja como ISO con 'Z' (instante UTC real), así que

@@ -155,7 +155,7 @@ export default function RaffleDetail() {
             )}
 
             <div className={styles.buyCard}>
-              {state === 'active' ? (
+              {state === 'active' && !raffle.winner ? (
                 <>
                   {isPick ? (
                     <NumberPicker
