@@ -13,7 +13,7 @@ import { ProgressBar } from '../components/ui/ProgressBar.jsx';
 import { ChanceSelector } from '../components/raffles/ChanceSelector.jsx';
 import { NumberPicker } from '../components/raffles/NumberPicker.jsx';
 import { HowItWorks } from '../components/marketing/HowItWorks.jsx';
-import { formatDate, formatInt, daysUntilLabel } from '../lib/format.js';
+import { formatDate, formatDateTime, formatInt, padTicket, daysUntilLabel } from '../lib/format.js';
 import { raffleProgress } from '../hooks/useRaffles.js';
 import styles from './RaffleDetail.module.css';
 
@@ -22,6 +22,7 @@ const KICKER_LABEL = {
   paused: 'Sorteo en pausa',
   finished: 'Sorteo finalizado',
   soldout: 'Números agotados',
+  closed: 'Ventas cerradas',
 };
 
 export default function RaffleDetail() {
@@ -177,18 +178,24 @@ export default function RaffleDetail() {
                 </>
               ) : (
                 <EmptyState
-                  icon={<GiftIcon />}
+                  icon={raffle.winner ? <TrophyIcon /> : <GiftIcon />}
                   title={
-                    state === 'finished'
-                      ? 'Este sorteo ya finalizó'
-                      : state === 'soldout'
-                        ? 'No quedan números'
-                        : 'Este sorteo no está recibiendo compras'
+                    raffle.winner
+                      ? '¡Ya tenemos ganador!'
+                      : state === 'finished'
+                        ? 'Este sorteo ya finalizó'
+                        : state === 'closed'
+                          ? 'Se cerraron las ventas'
+                          : state === 'soldout'
+                            ? 'No quedan números'
+                            : 'Este sorteo no está recibiendo compras'
                   }
                 >
-                  {state === 'finished' && raffle.winner
-                    ? `Número ganador: ${raffle.winner.number}`
-                    : 'Mirá los demás sorteos activos.'}
+                  {raffle.winner
+                    ? `🎉 ¡Felicitaciones al número ${padTicket(raffle.winner.number, raffle.totalNumbers)}, ganador de este sorteo!`
+                    : state === 'closed' && raffle.closesAt
+                      ? `Ya no hay números disponibles: las ventas cerraron. El sorteo se realiza el ${formatDateTime(raffle.closesAt)}.`
+                      : 'Mirá los demás sorteos activos.'}
                 </EmptyState>
               )}
             </div>
@@ -251,6 +258,26 @@ function Lightbox({ src, alt, onClose }) {
         onClick={(e) => e.stopPropagation()}
       />
     </motion.div>
+  );
+}
+
+function TrophyIcon() {
+  return (
+    <svg width="38" height="38" viewBox="0 0 24 24" fill="none">
+      <path
+        d="M7 4h10v4a5 5 0 0 1-10 0V4Z"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M7 5H4v2a3 3 0 0 0 3 3M17 5h3v2a3 3 0 0 1-3 3M9.5 17h5M11 13v3M13 13v3M8 21h8"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
 }
 

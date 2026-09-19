@@ -21,6 +21,10 @@ export function raffleState(raffle) {
   if (!raffle) return 'finished';
   if (raffle.status === 'finished') return 'finished';
   if (raffle.status === 'paused') return 'paused';
+  // `closesAt` siempre viaja como ISO con 'Z' (instante UTC real), así que
+  // compararlo con `new Date()` es seguro sin importar el huso horario del
+  // navegador: los dos lados son instantes absolutos, no horas "sueltas".
+  if (raffle.closesAt && new Date() >= new Date(raffle.closesAt)) return 'closed';
   if (
     raffle.totalNumbers != null &&
     raffle.numbersAssigned != null &&

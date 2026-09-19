@@ -15,6 +15,7 @@ const RAFFLE_STATE = {
   active: { tone: 'success', label: 'Activo', dot: true },
   upcoming: { tone: 'brand', label: 'Próximamente' },
   soldout: { tone: 'warning', label: 'Agotado' },
+  closed: { tone: 'warning', label: 'Ventas cerradas' },
   finished: { tone: 'neutral', label: 'Finalizado' },
   paused: { tone: 'neutral', label: 'En pausa' },
   draft: { tone: 'neutral', label: 'Borrador' },
