@@ -3,6 +3,7 @@ import { Layout } from './components/layout/Layout.jsx';
 import Home from './pages/Home.jsx';
 import Raffles from './pages/Raffles.jsx';
 import RaffleDetail from './pages/RaffleDetail.jsx';
+import MainRaffleRedirect from './pages/MainRaffleRedirect.jsx';
 import Checkout from './pages/Checkout.jsx';
 import HowToParticipate from './pages/HowToParticipate.jsx';
 import Winners from './pages/Winners.jsx';
@@ -20,6 +21,7 @@ export function AppRoutes() {
       <Route element={<Layout />}>
         <Route index element={<Home />} />
         <Route path="sorteos" element={<Raffles />} />
+        <Route path="sorteo-principal" element={<MainRaffleRedirect />} />
         <Route path="sorteos/:raffleId" element={<RaffleDetail />} />
         <Route path="comprar/:orderId" element={<Checkout />} />
         <Route path="como-participar" element={<HowToParticipate />} />
