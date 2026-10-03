@@ -3,6 +3,8 @@ import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import { AuthShell } from '../components/auth/AuthShell.jsx';
 import { Field, TextInput, SelectInput } from '../components/ui/Field.jsx';
+import { BirthDateField } from '../components/auth/BirthDateField.jsx';
+import { parseBirthDate } from '../lib/birthDate.js';
 import { Button } from '../components/ui/Button.jsx';
 import { PROVINCES, onlyDigits } from '../lib/argentina.js';
 import styles from './Register.module.css';
@@ -19,15 +21,11 @@ const EMPTY = {
   postalCode: '',
 };
 
-const TODAY_ISO = new Date().toISOString().slice(0, 10);
-
-// El input nativo type="date" siempre entrega (y espera) 'YYYY-MM-DD'.
-function ageFrom(isoDate) {
-  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(isoDate || '');
-  if (!m) return null;
-  const [, y, mo, d] = m.map(Number);
-  const birth = new Date(Date.UTC(y, mo - 1, d));
-  if (birth.getUTCFullYear() !== y || birth.getUTCMonth() !== mo - 1 || birth.getUTCDate() !== d) return null;
+// "DD/MM/AAAA" (lo que arma BirthDateField) -> edad en años cumplidos.
+function ageFrom(value) {
+  const parsed = parseBirthDate(value);
+  if (!parsed) return null;
+  const { d, mo, y } = parsed;
   const now = new Date();
   let age = now.getUTCFullYear() - y;
   if (now.getUTCMonth() + 1 < mo || (now.getUTCMonth() + 1 === mo && now.getUTCDate() < d)) age -= 1;
@@ -41,7 +39,8 @@ function validate(form) {
   const age = ageFrom(form.birthDate);
   if (age === null) e.birthDate = form.birthDate ? 'Fecha inválida' : 'Ingresá tu fecha de nacimiento';
   else if (age < 18) e.birthDate = 'Debés ser mayor de 18 años para participar';
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) e.email = 'Email inválido';
+  else if (age > 119) e.birthDate = 'Revisá la fecha de nacimiento';
+  if (form.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) e.email = 'Email inválido';
   if (!/^\d{8,15}$/.test(onlyDigits(form.whatsapp))) e.whatsapp = 'Número inválido (con código de país)';
   if (form.address.trim().length < 3) e.address = 'Ingresá tu dirección';
   if (form.city.trim().length < 2) e.city = 'Ingresá tu localidad';
@@ -100,7 +99,7 @@ export default function Register() {
         firstName: form.firstName.trim(),
         lastName: form.lastName.trim(),
         birthDate: form.birthDate,
-        email: form.email.trim(),
+        email: form.email.trim() || undefined,
         whatsapp: onlyDigits(form.whatsapp),
         address: form.address.trim(),
         city: form.city.trim(),
@@ -185,23 +184,20 @@ export default function Register() {
             label="Fecha de nacimiento"
             required
             error={errors.birthDate}
-            hint={!errors.birthDate ? 'Debés ser mayor de 18 años para participar.' : undefined}
+            hint={!errors.birthDate ? 'DD/MM/AAAA. Debés ser mayor de 18 años para participar.' : undefined}
             className={styles.full}
           >
             {(p) => (
-              <TextInput
+              <BirthDateField
                 {...p}
-                type="date"
                 value={form.birthDate}
-                onChange={set('birthDate')}
-                max={TODAY_ISO}
-                min="1900-01-01"
+                onChange={(value) => setForm((f) => ({ ...f, birthDate: value }))}
               />
             )}
           </Field>
 
-          <Field label="Email" required error={errors.email} className={styles.col}>
-            {(p) => <TextInput {...p} type="email" value={form.email} onChange={set('email')} placeholder="tu@email.com" autoComplete="email" />}
+          <Field label="Email" error={errors.email} className={styles.col} hint="Opcional">
+            {(p) => <TextInput {...p} type="email" value={form.email} onChange={set('email')} placeholder="tu@email.com (opcional)" autoComplete="email" />}
           </Field>
           <Field label="WhatsApp" required error={errors.whatsapp} className={styles.col}>
             {(p) => <TextInput {...p} value={form.whatsapp} onChange={set('whatsapp')} inputMode="numeric" placeholder="5491112345678" />}
